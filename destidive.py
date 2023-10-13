@@ -95,16 +95,18 @@ data['SERVICE_NAME_ENCODED'] = label_encoder_service.fit_transform(
 # One-hot encode the 'CATEGORY' feature using OneHotEncoder
 category_encoder = OneHotEncoder(sparse=False)
 category_encoded = category_encoder.fit_transform(data[['CATEGORY']])
-unique_categories = category_encoder.get_feature_names_out(['CATEGORY'])
+
+# Get unique category names
+unique_categories = category_encoder.categories_[0]
 
 # Create new column names for the one-hot encoded features
 new_column_names = [f'Category_{category}' for category in unique_categories]
 
-# Rename the columns in the DataFrame
-data[new_column_names] = pd.DataFrame(category_encoded, columns=unique_categories)
+# Create a DataFrame with the one-hot encoded features
+category_encoded_df = pd.DataFrame(category_encoded, columns=new_column_names)
 
-category_encoded = ct.fit_transform(data[['CATEGORY']])
-data[category_columns] = pd.DataFrame(category_encoded, columns=ct.get_feature_names_out(['CATEGORY']))
+# Concatenate the one-hot encoded features with the original DataFrame
+data = pd.concat([data, category_encoded_df], axis=1)
 
 # Load the trained KNN model
 with open("knn_model.pkl", "rb") as model_file:
