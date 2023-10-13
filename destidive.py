@@ -1,7 +1,9 @@
 import streamlit as st
 import pickle
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 
 # Define the gradient background for the title
 title_background = """
@@ -91,12 +93,14 @@ label_encoder_service = LabelEncoder()
 data['SERVICE_NAME_ENCODED'] = label_encoder_service.fit_transform(
     data['SERVICE_NAME'].str.strip())  # Strip whitespace
 
-# One-hot encode the 'CATEGORY' feature
-category_encoder = OneHotEncoder()
-category_encoded = category_encoder.fit_transform(data[['CATEGORY']]).toarray()
-category_columns = category_encoder.get_feature_names_out(['CATEGORY'])
-data[category_columns] = pd.DataFrame(
-    category_encoded, columns=category_columns)
+# One-hot encode the 'CATEGORY' feature using ColumnTransformer
+ct = ColumnTransformer(
+    transformers=[('encoder', OneHotEncoder(), ['CATEGORY'])],
+    remainder='passthrough'
+)
+
+category_encoded = ct.fit_transform(data[['CATEGORY']])
+data[category_columns] = pd.DataFrame(category_encoded, columns=ct.get_feature_names_out(['CATEGORY']))
 
 # Load the trained KNN model
 with open("knn_model.pkl", "rb") as model_file:
