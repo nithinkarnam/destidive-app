@@ -95,8 +95,13 @@ data['SERVICE_NAME_ENCODED'] = label_encoder_service.fit_transform(
 # One-hot encode the 'CATEGORY' feature using OneHotEncoder
 category_encoder = OneHotEncoder(sparse=False)
 category_encoded = category_encoder.fit_transform(data[['CATEGORY']])
-category_columns = category_encoder.get_feature_names_out(['CATEGORY'])
-data[category_columns] = pd.DataFrame(category_encoded, columns=category_columns)
+unique_categories = category_encoder.get_feature_names_out(['CATEGORY'])
+
+# Create new column names for the one-hot encoded features
+new_column_names = [f'Category_{category}' for category in unique_categories]
+
+# Rename the columns in the DataFrame
+data[new_column_names] = pd.DataFrame(category_encoded, columns=unique_categories)
 
 category_encoded = ct.fit_transform(data[['CATEGORY']])
 data[category_columns] = pd.DataFrame(category_encoded, columns=ct.get_feature_names_out(['CATEGORY']))
